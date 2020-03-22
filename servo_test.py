@@ -5,7 +5,7 @@ import time
 class ServoClient(object):
 #These are the config steps
 
-	def __init__(self, servoconfig):
+	def __init__(self, servoconfig, startingAnge):
 		self._servoconfig = servoconfig
 		# use P1 header pin numbering convention
 		GPIO.setmode(GPIO.BOARD)
@@ -15,12 +15,18 @@ class ServoClient(object):
 		# Hz = 50, pin = 11
 		self._servo = GPIO.PWM(self._servoconfig["pin"], self._servoconfig["Hz"])
 		self._servo.start(0) # @todo replace init value to...some correct value...
+		self._startingAnge = startingAnge
+		self.moveToAngle(self._startingAnge)
 
 	# return 0 if everything is fine. if it's anything else...it's an error.
 	def moveToAngle(self, degrees):
 		if degrees > 180 or degrees < 0:
 			return 1
 		
+		if degrees == self._startingAnge:
+			return 0
+		
+		self._startingAnge = degrees
 		#range for servo is from 2 to 12. 7 is 90, 12 is 180, 2 is 0.
 		# normalization is servo num = degrees/18 + 2
 		# This is the angle writes.
@@ -45,9 +51,11 @@ servoConfig = {
 	"Hz": 50
 }
 
-servo = ServoClient(servoConfig)
+servo = ServoClient(servoConfig, 0)
+
 servo.moveToAngle(0)
 servo.moveToAngle(90)
 servo.moveToAngle(180)
 servo.moveToAngle(0)
+
 servo.close()
